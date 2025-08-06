@@ -1,0 +1,12 @@
+# Dependencias básicas para testing y desarrollo
+pytest
+pytest-asyncio
+pytest-mock
+pytest-cov
+black
+flake8
+rich
+python-dotenv
+
+# Dependencias mínimas para swarms (sin PyTorch)
+# swarms  # Comentado temporalmente para evitar PyTorch 

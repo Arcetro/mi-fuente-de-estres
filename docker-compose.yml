@@ -1,0 +1,44 @@
+version: '3.8'
+
+services:
+  rswarm-dev:
+    build: .
+    container_name: rswarm-development
+    volumes:
+      - .:/app
+      - /app/__pycache__
+      - /app/.pytest_cache
+    ports:
+      - "8000:8000"
+    environment:
+      - PYTHONPATH=/app
+      - PYTHONUNBUFFERED=1
+    command: tail -f /dev/null  # Mantener el container corriendo
+    stdin_open: true
+    tty: true
+
+  rswarm-test:
+    build: .
+    container_name: rswarm-testing
+    volumes:
+      - .:/app
+      - /app/__pycache__
+      - /app/.pytest_cache
+    environment:
+      - PYTHONPATH=/app
+      - PYTHONUNBUFFERED=1
+    command: pytest tests/ -v --tb=short
+    depends_on:
+      - rswarm-dev
+
+  rswarm-run:
+    build: .
+    container_name: rswarm-running
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+    environment:
+      - PYTHONPATH=/app
+      - PYTHONUNBUFFERED=1
+    command: python recepcionista_swarm.py 

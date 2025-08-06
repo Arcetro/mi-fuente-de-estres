@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  rswarm-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: rswarm-development
+    volumes:
+      - .:/app
+      - /app/__pycache__
+      - /app/.pytest_cache
+    ports:
+      - "8000:8000"
+    environment:
+      - PYTHONPATH=/app
+      - PYTHONUNBUFFERED=1
+    stdin_open: true
+    tty: true
+
+  rswarm-test:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: rswarm-testing
+    volumes:
+      - .:/app
+      - /app/__pycache__
+      - /app/.pytest_cache
+    environment:
+      - PYTHONPATH=/app
+      - PYTHONUNBUFFERED=1
+    command: pytest tests/ -v --tb=short 
