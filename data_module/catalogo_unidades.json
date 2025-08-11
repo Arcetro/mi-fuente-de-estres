@@ -1,0 +1,11 @@
+{
+  "studio": {"etiqueta_publica": "Studio", "capacidad_max": 2, "sinonimos": ["estudio", "monoambiente"]},
+  "doble": {"etiqueta_publica": "Doble", "capacidad_max": 2, "sinonimos": ["matrimonial", "2 amb"]},
+  "triple": {"etiqueta_publica": "Triple", "capacidad_max": 3, "sinonimos": ["3 pax"]},
+  "familiar": {"etiqueta_publica": "Familiar", "capacidad_max": 4, "sinonimos": ["family"]},
+  "suite": {"etiqueta_publica": "Suite", "capacidad_max": 2, "sinonimos": ["suite"]},
+  "depto_2amb": {"etiqueta_publica": "Depto 2 amb", "capacidad_max": 4, "sinonimos": ["departamento 2 ambientes", "2 ambientes"]},
+  "cabaña_1hab": {"etiqueta_publica": "Cabaña 1 hab", "capacidad_max": 3, "sinonimos": ["cabana 1 hab", "cabaña"]}
+}
+
+

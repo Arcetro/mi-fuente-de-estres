@@ -8,3 +8,8 @@ black
 flake8
 mypy
 python-dotenv
+pydantic>=2.5,<3
+rapidfuzz>=3,<4
+python-dateutil>=2.9
+prometheus-client>=0.20
+redis>=5

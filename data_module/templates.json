@@ -1,0 +1,15 @@
+{
+  "SALUDO": "Hola! Soy tu asistente. ¿En qué puedo ayudarte?",
+  "DESPEDIDA": "¡De nada! Que tengas un gran día.",
+  "UBICACION": "Estamos en Calle Falsa 123, Ciudad.",
+  "POLITICAS": "Check-in a las {checkin} y check-out a las {checkout}.",
+  "COTIZACION": "{tipo_unidad} para {personas} persona(s), {noches} noche(s) desde el {checkin}: {precio} {moneda}.",
+  "currency_info": "Trabajamos en ARS. Si necesitás una cotización en USD, podemos gestionarla por fuera del chat.",
+  "REPROMPT_NOCHES": "¿Cuántas noches pensás quedarte?",
+  "REPROMPT_CHECKIN": "¿Para qué fecha querés alojarte? (dd/mm)",
+  "REPROMPT_PERSONAS": "¿Para cuántas personas sería?",
+  "REPROMPT_UNIDAD": "¿Preferís studio o doble?",
+  "GENERICA": "Puedo ayudarte con políticas, ubicación, precios y disponibilidad."
+}
+
+
