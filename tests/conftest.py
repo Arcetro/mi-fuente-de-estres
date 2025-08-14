@@ -46,4 +46,14 @@ def respuestas_esperadas():
         "gracias": ["de nada", "ayudar"],
         "generico": ["rswarm", "recepcionista"],
         "default": ["rswarm", "recepcionista"]
-    } 
+    }
+
+# Database fixture for tests that need it
+@pytest.fixture(scope="session", autouse=True)
+def setup_database():
+    """Set up the database for the test session."""
+    # This import is here to avoid circular dependencies
+    from infra.database import init_db, drop_db
+    init_db()
+    yield
+    drop_db()

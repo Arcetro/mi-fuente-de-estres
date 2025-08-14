@@ -3,10 +3,11 @@ from __future__ import annotations
 import os
 import json
 from starlette.applications import Starlette
-from starlette.responses import JSONResponse, PlainTextResponse, Response
+from starlette.responses import JSONResponse, PlainTextResponse, Response, FileResponse
 import uuid
 from starlette.requests import Request
 from starlette.routing import Route
+from sqlalchemy import desc
 
 from adapters.wa import verify_signature, normalize_inbound, send_text, send_buttons
 from pic.contracts import PICMessage, PICContext
@@ -14,10 +15,20 @@ from pic.bus import PicBus
 from agents import tier1, tier2
 from telemetry.metrics import metrics_response, time_histogram, COUNTERS, json_log
 from infra.dedupe import build_deduper
+from infra.database import SessionLocal, Message, init_db
 
 
 bus = PicBus(routes={"tier1": tier1.handle, "tier2": tier2.handle})
 deduper = build_deduper()
+
+
+def db_log(session_id: str, direction: str, text: str):
+    db = SessionLocal()
+    try:
+        db.add(Message(session_id=session_id, direction=direction, text=text))
+        db.commit()
+    finally:
+        db.close()
 
 
 async def verify(request: Request) -> Response:
@@ -47,6 +58,7 @@ async def inbound(request: Request) -> Response:
             json_log("dedupe_hit", wa_message_id=wa_id)
             return JSONResponse({"status": "ok"}, status_code=200)
 
+        db_log(session_id=payload["sessionId"], direction="inbound", text=payload["text"])
         # Publish to bus: from wa-adapter to tier1
         pic = PICMessage(
             id=wa_id or "",
@@ -81,10 +93,15 @@ async def send(request: Request) -> Response:
         messages = body.get("messages", [])  # [{type: text|buttons, text:..., buttons:{id:title}}]
         results = []
         for msg in messages:
+            text_to_send = ""
             if msg.get("type") == "text":
-                code, res = await send_text(wa_base_url, wa_token, to, msg.get("text", ""), request_id=request_id, session_id=session_id)
+                text_to_send = msg.get("text", "")
+                db_log(session_id=to, direction="outbound", text=text_to_send)
+                code, res = await send_text(wa_base_url, wa_token, to, text_to_send, request_id=request_id, session_id=session_id)
             elif msg.get("type") == "buttons":
-                code, res = await send_buttons(wa_base_url, wa_token, to, msg.get("question", ""), msg.get("buttons", {}), request_id=request_id, session_id=session_id)
+                text_to_send = msg.get("question", "")
+                db_log(session_id=to, direction="outbound", text=text_to_send)
+                code, res = await send_buttons(wa_base_url, wa_token, to, text_to_send, msg.get("buttons", {}), request_id=request_id, session_id=session_id)
             else:
                 code, res = 400, {"error": "unknown message type"}
             results.append({"code": code, "response": res})
@@ -96,13 +113,37 @@ async def metrics(request: Request) -> Response:
     return Response(body, media_type=ctype)
 
 
+async def get_messages(request: Request) -> Response:
+    db = SessionLocal()
+    try:
+        messages = db.query(Message).order_by(desc(Message.timestamp)).limit(20).all()
+        return JSONResponse([
+            {
+                "id": m.id,
+                "timestamp": m.timestamp.isoformat(),
+                "session_id": m.session_id,
+                "direction": m.direction,
+                "text": m.text,
+            }
+            for m in messages
+        ])
+    finally:
+        db.close()
+
+
+async def homepage(request: Request) -> Response:
+    return FileResponse("web/templates/index.html")
+
+
 routes = [
+    Route("/", homepage),
+    Route("/api/messages", get_messages),
     Route("/verify", verify, methods=["GET"]),
     Route("/inbound", inbound, methods=["POST"]),
     Route("/send", send, methods=["POST"]),
     Route("/metrics", metrics, methods=["GET"]),
 ]
 
-app = Starlette(routes=routes)
+app = Starlette(routes=routes, on_startup=[init_db])
 
 
