@@ -13,7 +13,7 @@ services:
     environment:
       - PYTHONPATH=/app
       - PYTHONUNBUFFERED=1
-    command: tail -f /dev/null  # Mantener el container corriendo
+    command: uvicorn web.app:app --host 0.0.0.0 --port 8000 --reload
     stdin_open: true
     tty: true
 
@@ -41,4 +41,4 @@ services:
     environment:
       - PYTHONPATH=/app
       - PYTHONUNBUFFERED=1
-    command: python recepcionista_swarm.py 
+    command: uvicorn web.app:app --host 0.0.0.0 --port 8000
