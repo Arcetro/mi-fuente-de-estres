@@ -63,13 +63,21 @@ scripts\docker-dev.bat run
 scripts\docker-dev.bat shell
 ```
 
+## 🖥️ Interfaz de Monitoreo
+
+Una vez que la aplicación está corriendo con el comando `dev`, puedes acceder a la interfaz de monitoreo en tu navegador en el puerto `8001`:
+
+[http://localhost:8001/](http://localhost:8001/)
+
+Esta interfaz muestra un historial de los mensajes recibidos y enviados por la aplicación y se actualiza en tiempo real usando WebSockets. El puerto `8000` está reservado para el servicio `run`.
+
 ## 📦 Instalación local (Alternativa)
 
 ```bash
 python -m venv .venv
 .venv\Scripts\activate  # En Windows
 pip install -r requirements.txt
-python recepcionista_swarm.py
+# La aplicación principal ahora es web/app.py y se recomienda correr con Docker.
 ```
 
 ## 🧪 Entorno de Testing
@@ -131,7 +139,7 @@ Swarm/
 ├── docker-compose.yml      # Orquestación de servicios
 ├── .dockerignore          # Archivos a ignorar en Docker
 ├── requirements.txt       # Dependencias de Python
-├── recepcionista_swarm.py # Aplicación principal
+├── web/app.py             # Aplicación principal (web)
 ├── pytest.ini            # Configuración de pytest
 ├── scripts/               # Scripts de desarrollo
 │   ├── docker-dev.sh     # Script Docker (Linux/Mac)
@@ -147,17 +155,18 @@ Swarm/
 ```
 
 ## ¿Cómo funciona?
-- Simula la recepción de mensajes (como si fueran de WhatsApp)
-- El agente Rswarm responde según reglas simples
-- Es el punto de partida para integrar APIs reales y lógica avanzada
+- **Recepción de Mensajes:** La aplicación recibe mensajes a través de un webhook, simulando una conexión con la API de WhatsApp.
+- **Procesamiento por Agentes:** Los mensajes son procesados por una serie de agentes (`tier1`, `tier2`) que determinan la intención y complejidad.
+- **Registro en Base de Datos:** Todos los mensajes entrantes y salientes son registrados en una base de datos SQLite.
+- **Interfaz de Monitoreo:** Una interfaz web en `http://localhost:8000/` muestra el historial de mensajes en tiempo real.
 
 ## 🚀 Próximos Pasos
 - [ ] Agregar más agentes especializados
 - [ ] Implementar sistema de routing inteligente
 - [ ] Integrar procesamiento de lenguaje natural
 - [ ] Conectar con APIs reales (WhatsApp, Telegram)
-- [ ] Agregar base de datos para historial
-- [ ] Crear interfaz web de monitoreo
+- [X] Agregar base de datos para historial
+- [X] Crear interfaz web de monitoreo
 
 ## 🐛 Troubleshooting
 

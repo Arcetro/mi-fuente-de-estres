@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rswarm Monitor</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; margin: 40px auto; max-width: 800px; line-height: 1.6; font-size: 16px; color: #333; padding: 0 10px; }
+        h1 { font-size: 2em; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+        .direction-inbound { color: #007bff; }
+        .direction-outbound { color: #28a745; }
+    </style>
+</head>
+<body>
+    <h1>Rswarm Message Monitor</h1>
+    <table id="messages-table">
+        <thead>
+            <tr>
+                <th>Timestamp</th>
+                <th>Session ID</th>
+                <th>Direction</th>
+                <th>Text</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Messages will be injected here -->
+        </tbody>
+    </table>
+
+    <script>
+        const tableBody = document.querySelector('#messages-table tbody');
+
+        async function fetchMessages() {
+            try {
+                const response = await fetch('/api/messages');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const messages = await response.json();
+                updateTable(messages);
+            } catch (error) {
+                console.error('Error fetching messages:', error);
+            }
+        }
+
+        function updateTable(messages) {
+            // Clear existing rows
+            tableBody.innerHTML = '';
+
+            // Add new rows
+            for (const msg of messages) {
+                const row = document.createElement('tr');
+                const directionClass = msg.direction === 'inbound' ? 'direction-inbound' : 'direction-outbound';
+
+                row.innerHTML = `
+                    <td>${new Date(msg.timestamp).toLocaleString()}</td>
+                    <td>${msg.session_id}</td>
+                    <td class="${directionClass}">${msg.direction}</td>
+                    <td>${msg.text}</td>
+                `;
+                tableBody.appendChild(row);
+            }
+        }
+
+        function addMessageToTable(msg) {
+            const row = document.createElement('tr');
+            const directionClass = msg.direction === 'inbound' ? 'direction-inbound' : 'direction-outbound';
+
+            row.innerHTML = `
+                <td>${new Date(msg.timestamp).toLocaleString()}</td>
+                <td>${msg.session_id}</td>
+                <td class="${directionClass}">${msg.direction}</td>
+                <td>${msg.text}</td>
+            `;
+            tableBody.insertBefore(row, tableBody.firstChild);
+        }
+
+        // Fetch initial messages
+        fetchMessages();
+
+        // Setup WebSocket for real-time updates
+        const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        const ws = new WebSocket(`${wsProtocol}//${window.location.host}/ws`);
+
+        ws.onmessage = function(event) {
+            const msg = JSON.parse(event.data);
+            addMessageToTable(msg);
+        };
+
+        ws.onclose = function() {
+            console.log('WebSocket connection closed. Attempting to reconnect in 5 seconds...');
+            setTimeout(function() {
+                // You might want to add more robust reconnection logic here
+                location.reload();
+            }, 5000);
+        };
+    </script>
+</body>
+</html>

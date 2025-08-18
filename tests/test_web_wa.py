@@ -4,6 +4,7 @@ import hashlib
 from starlette.testclient import TestClient
 
 from web.app import app
+from config.settings import settings
 
 
 def _sig(secret: str, body: bytes) -> str:
@@ -12,14 +13,14 @@ def _sig(secret: str, body: bytes) -> str:
 
 def test_verify_ok(monkeypatch):
     client = TestClient(app)
-    monkeypatch.setenv("WA_VERIFY_TOKEN", "abc")
+    monkeypatch.setattr(settings, "WA_VERIFY_TOKEN", "abc")
     r = client.get("/verify?hub.mode=subscribe&hub.verify_token=abc&hub.challenge=123")
     assert r.status_code == 200 and r.text == "123"
 
 
 def test_verify_forbidden(monkeypatch):
     client = TestClient(app)
-    monkeypatch.setenv("WA_VERIFY_TOKEN", "abc")
+    monkeypatch.setattr(settings, "WA_VERIFY_TOKEN", "abc")
     r = client.get("/verify?hub.mode=subscribe&hub.verify_token=xyz&hub.challenge=123")
     assert r.status_code == 403
 
@@ -42,7 +43,7 @@ def test_inbound_signature_ok_text(monkeypatch):
         ]
     }
     payload = json.dumps(body).encode("utf-8")
-    monkeypatch.setenv("APP_SECRET", "s1")
+    monkeypatch.setattr(settings, "APP_SECRET", "s1")
     r = client.post("/inbound", data=payload, headers={"X-Hub-Signature-256": _sig("s1", payload)})
     assert r.status_code == 200
 
@@ -50,7 +51,7 @@ def test_inbound_signature_ok_text(monkeypatch):
 def test_inbound_signature_forbidden(monkeypatch):
     client = TestClient(app)
     payload = b"{}"
-    monkeypatch.setenv("APP_SECRET", "s1")
+    monkeypatch.setattr(settings, "APP_SECRET", "s1")
     r = client.post("/inbound", data=payload, headers={"X-Hub-Signature-256": _sig("s1", b"bad")})
     assert r.status_code == 403
 
@@ -78,7 +79,7 @@ def test_inbound_interactive_button(monkeypatch):
         ]
     }
     payload = json.dumps(body).encode("utf-8")
-    monkeypatch.setenv("APP_SECRET", "s1")
+    monkeypatch.setattr(settings, "APP_SECRET", "s1")
     r = client.post("/inbound", data=payload, headers={"X-Hub-Signature-256": _sig("s1", payload)})
     assert r.status_code == 200
 
@@ -101,7 +102,7 @@ def test_inbound_dedupe_memory(monkeypatch):
         ]
     }
     payload = json.dumps(body).encode("utf-8")
-    monkeypatch.setenv("APP_SECRET", "s1")
+    monkeypatch.setattr(settings, "APP_SECRET", "s1")
     # first time processes
     r1 = client.post("/inbound", data=payload, headers={"X-Hub-Signature-256": _sig("s1", payload)})
     assert r1.status_code == 200
