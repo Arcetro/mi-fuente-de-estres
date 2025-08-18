@@ -65,9 +65,38 @@
             }
         }
 
-        // Fetch messages on page load and then every 5 seconds
+        function addMessageToTable(msg) {
+            const row = document.createElement('tr');
+            const directionClass = msg.direction === 'inbound' ? 'direction-inbound' : 'direction-outbound';
+
+            row.innerHTML = `
+                <td>${new Date(msg.timestamp).toLocaleString()}</td>
+                <td>${msg.session_id}</td>
+                <td class="${directionClass}">${msg.direction}</td>
+                <td>${msg.text}</td>
+            `;
+            tableBody.insertBefore(row, tableBody.firstChild);
+        }
+
+        // Fetch initial messages
         fetchMessages();
-        setInterval(fetchMessages, 5000);
+
+        // Setup WebSocket for real-time updates
+        const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        const ws = new WebSocket(`${wsProtocol}//${window.location.host}/ws`);
+
+        ws.onmessage = function(event) {
+            const msg = JSON.parse(event.data);
+            addMessageToTable(msg);
+        };
+
+        ws.onclose = function() {
+            console.log('WebSocket connection closed. Attempting to reconnect in 5 seconds...');
+            setTimeout(function() {
+                // You might want to add more robust reconnection logic here
+                location.reload();
+            }, 5000);
+        };
     </script>
 </body>
 </html>

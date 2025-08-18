@@ -1,12 +1,8 @@
-from sqlalchemy import create_engine, Column, Integer, String, DateTime, func
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy.ext.declarative import declarative_base
-import datetime
+from sqlalchemy import Column, Integer, String, DateTime, func
+from sqlalchemy.orm import declarative_base
+from sqlalchemy.engine import Engine
 
-DATABASE_URL = "sqlite:///./rswarm.db"
 
-engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
 class Message(Base):
@@ -18,15 +14,8 @@ class Message(Base):
     direction = Column(String)  # "inbound" or "outbound"
     text = Column(String)
 
-def init_db():
+def init_db(engine: Engine):
     Base.metadata.create_all(bind=engine)
 
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
-
-def drop_db():
+def drop_db(engine: Engine):
     Base.metadata.drop_all(bind=engine)

@@ -17,3 +17,4 @@ starlette>=0.32.0
 requests>=2.0.0
 uvicorn>=0.23.2
 httpx>=0.25.0
+pydantic-settings>=2.0.0

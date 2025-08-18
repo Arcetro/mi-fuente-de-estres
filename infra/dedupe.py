@@ -39,12 +39,18 @@ class DeduperRedis:
         return bool(self.client.set(key, 1, nx=True, ex=self.ttl_seconds))
 
 
+from config.settings import settings
+
 def build_deduper() -> object:
-    ttl_minutes = int(os.environ.get("DEDUPE_TTL_MINUTES", "10"))
-    ttl_seconds = ttl_minutes * 60
-    url = os.environ.get("REDIS_URL")
-    if url and redis:
-        return DeduperRedis(url, ttl_seconds)
+    ttl_seconds = settings.DEDUPE_TTL_MINUTES * 60
+    url = f"redis://{settings.REDIS_HOST}:{settings.REDIS_PORT}"
+    if redis:
+        try:
+            # Check if redis is available
+            redis.from_url(url).ping()
+            return DeduperRedis(url, ttl_seconds)
+        except redis.exceptions.ConnectionError:
+            pass
     return DeduperMemory(ttl_seconds)
 
 

@@ -9,13 +9,16 @@ services:
       - /app/__pycache__
       - /app/.pytest_cache
     ports:
-      - "8000:8000"
+      - "8001:8000"
     environment:
       - PYTHONPATH=/app
       - PYTHONUNBUFFERED=1
+      - REDIS_HOST=redis
     command: uvicorn web.app:app --host 0.0.0.0 --port 8000 --reload
     stdin_open: true
     tty: true
+    depends_on:
+      - redis
 
   rswarm-test:
     build: .
@@ -27,9 +30,10 @@ services:
     environment:
       - PYTHONPATH=/app
       - PYTHONUNBUFFERED=1
+      - REDIS_HOST=redis
     command: pytest tests/ -v --tb=short
     depends_on:
-      - rswarm-dev
+      - redis
 
   rswarm-run:
     build: .
@@ -41,4 +45,13 @@ services:
     environment:
       - PYTHONPATH=/app
       - PYTHONUNBUFFERED=1
+      - REDIS_HOST=redis
     command: uvicorn web.app:app --host 0.0.0.0 --port 8000
+    depends_on:
+      - redis
+
+  redis:
+    image: "redis:alpine"
+    container_name: rswarm-redis
+    ports:
+      - "6379:6379"

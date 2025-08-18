@@ -65,11 +65,11 @@ scripts\docker-dev.bat shell
 
 ## 🖥️ Interfaz de Monitoreo
 
-Una vez que la aplicación está corriendo con el comando `dev`, puedes acceder a la interfaz de monitoreo en tu navegador:
+Una vez que la aplicación está corriendo con el comando `dev`, puedes acceder a la interfaz de monitoreo en tu navegador en el puerto `8001`:
 
-[http://localhost:8000/](http://localhost:8000/)
+[http://localhost:8001/](http://localhost:8001/)
 
-Esta interfaz muestra un historial de los mensajes recibidos y enviados por la aplicación, y se actualiza automáticamente cada 5 segundos.
+Esta interfaz muestra un historial de los mensajes recibidos y enviados por la aplicación y se actualiza en tiempo real usando WebSockets. El puerto `8000` está reservado para el servicio `run`.
 
 ## 📦 Instalación local (Alternativa)
 

@@ -54,6 +54,7 @@ def setup_database():
     """Set up the database for the test session."""
     # This import is here to avoid circular dependencies
     from infra.database import init_db, drop_db
-    init_db()
+    from web.dependencies import engine
+    init_db(engine)
     yield
-    drop_db()
+    drop_db(engine)
